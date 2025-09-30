@@ -4,7 +4,12 @@ from apps.datasource.models.datasource import CoreDatasource, DatasourceConf
 
 
 def get_version_sql(ds: CoreDatasource, conf: DatasourceConf):
-    if ds.type == "mysql" or ds.type == "doris":
+    #for debug
+    if ds.type == 'intarkdb':
+        return f"""
+                show all
+                """
+    elif ds.type == "mysql" or ds.type == "doris":
         return f"""
                 SELECT VERSION()
                 """
@@ -33,7 +38,13 @@ def get_version_sql(ds: CoreDatasource, conf: DatasourceConf):
 
 
 def get_table_sql(ds: CoreDatasource, conf: DatasourceConf, db_version: str = ''):
-    if ds.type == "mysql" or ds.type == "doris":
+    # for debug
+    if ds.type == "intarkdb":
+        return f"""
+                SHOW TABLES;
+                """
+
+    elif ds.type == "mysql" or ds.type == "doris":
         return f"""
                 SELECT 
                     TABLE_NAME, 
@@ -133,6 +144,11 @@ def get_table_sql(ds: CoreDatasource, conf: DatasourceConf, db_version: str = ''
 
 
 def get_field_sql(ds: CoreDatasource, conf: DatasourceConf, table_name: str = None):
+    # for debug
+    if ds.type == "intarkdb":
+        sql1 = f"""
+                SHOW CREATE TABLE {table_name}
+                """
     if ds.type == "mysql" or ds.type == "doris":
         sql1 = f"""
                 SELECT 

@@ -231,6 +231,9 @@ def get_ds_engine(ds: AssistantOutDsSchema) -> Engine:
     elif ds.type == 'oracle':
         engine = create_engine(uri,
                                pool_timeout=timeout)
+    # for debug
+    elif ds.type == 'intarkdb':
+        engine = create_engine("IntarkDB:///intarkdb")
     else:
         engine = create_engine(uri, connect_args={"connect_timeout": timeout}, pool_timeout=timeout)
     return engine

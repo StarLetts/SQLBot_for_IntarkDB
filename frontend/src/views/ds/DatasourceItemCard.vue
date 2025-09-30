@@ -5,7 +5,7 @@ import ExcelDs from '@/assets/svg/ds/Excel-ds.svg'
 import PgDs from '@/assets/svg/ds/pg-ds.svg'
 import MysqlDs from '@/assets/svg/ds/mysql-ds.svg'
 import OracleDs from '@/assets/svg/ds/oracle-ds.svg'
-
+import intarkdbDs from '@/assets/svg/ds/mysql-ds.svg'
 defineProps<{
   ds: any
 }>()
@@ -28,6 +28,7 @@ defineProps<{
     <div class="connection-icon">
       <Icon>
         <MysqlDs v-if="ds.type === 'mysql'" />
+        <intarkdbDs v-if="ds.type === 'intarkdb'" />
         <SQLServerDs v-else-if="ds.type === 'sqlServer'" />
         <PgDs v-else-if="ds.type === 'pg'" />
         <ExcelDs v-else-if="ds.type === 'excel'" />

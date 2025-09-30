@@ -230,6 +230,7 @@
         "sqlServer": "Supported version: 2012+",
         "oracle": "Supported version: 12+",
         "mysql": "Supported version: 5.6+",
+        "intarkdb": "Supported version: 1.2.0+",
         "pg": "Supported version: 9.6+"
       },
       "selected": "Selected: {0}/{1}",
@@ -283,6 +284,7 @@
     "field_notes": "Field notes",
     "select_all": "Select all",
     "mysql_data_source": "Modify {msg} data source",
+    "intarkdb_data_source": "Modify {msg} data source",
     "configuration_information": "Configuration information",
     "data_source": "Do you want to delete the data source: {msg}?",
     "operate_with_caution": "After being deleted, the data source cannot be intelligently counted. Please operate with caution.",

@@ -117,6 +117,7 @@
             <span v-if="form.type === 'sqlServer'">2012+</span>
             <span v-else-if="form.type === 'oracle'">12+</span>
             <span v-else-if="form.type === 'mysql'">5.6+</span>
+            <span v-else-if="form.type === 'intarkdb'">1.2.0+</span>
             <span v-else-if="form.type === 'pg'">9.6+</span>
           </span>
         </div>

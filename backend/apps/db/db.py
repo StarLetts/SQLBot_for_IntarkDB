@@ -4,6 +4,7 @@ import platform
 import urllib.parse
 from decimal import Decimal
 from typing import Optional
+import re
 
 from apps.db.db_sql import get_table_sql, get_field_sql, get_version_sql
 from common.error import ParseSQLResultError
@@ -11,6 +12,19 @@ from common.error import ParseSQLResultError
 if platform.system() != "Darwin":
     import dmPython
 import pymysql
+import sys
+import os
+import ctypes
+sys.path.append("C:/Users/Lenovo/.conda/envs/sqlbot/Lib/site-packages")
+sys.path.append("D:/IntarkDB_V2.0_windows/release/lib")
+dll_dir = r"D:\IntarkDB_V2.0_windows\release\lib"  # 修改成你的实际目录
+os.add_dll_directory(dll_dir)   # 让 Python 知道 DLL 在这里（Python 3.8+）
+ctypes.CDLL(os.path.join(dll_dir, "libnetwork_client_dynamic.dll"))
+from intarkdb import intarkdb
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker, declarative_base
+from intarkdb import intarkdb_orm
+intarkdb_orm.register()
 import redshift_connector
 from sqlalchemy import create_engine, text, Engine
 from sqlalchemy.orm import sessionmaker
@@ -33,6 +47,7 @@ def get_uri(ds: CoreDatasource) -> str:
 
 def get_uri_from_config(type: str, conf: DatasourceConf) -> str:
     db_url: str
+    # for debug
     if type == "mysql":
         if conf.extraJdbc is not None and conf.extraJdbc != '':
             db_url = f"mysql+pymysql://{urllib.parse.quote(conf.username)}:{urllib.parse.quote(conf.password)}@{conf.host}:{conf.port}/{conf.database}?{conf.extraJdbc}"
@@ -75,7 +90,11 @@ def get_engine(ds: CoreDatasource, timeout: int = 0) -> Engine:
         conf.timeout = timeout
     if timeout > 0:
         conf.timeout = timeout
-    if ds.type == "pg":
+    # for debug
+    if ds.type == "intarkdb":
+        intarkdb_orm.register()
+        engine = create_engine("IntarkDB:///intarkdb")
+    elif ds.type == "pg":
         if conf.dbSchema is not None and conf.dbSchema != "":
             engine = create_engine(get_uri(ds),
                                    connect_args={"options": f"-c search_path={urllib.parse.quote(conf.dbSchema)}",
@@ -105,7 +124,48 @@ def get_session(ds: CoreDatasource | AssistantOutDsSchema):
 def check_connection(trans: Optional[Trans], ds: CoreDatasource | AssistantOutDsSchema, is_raise: bool = False):
     if isinstance(ds, CoreDatasource):
         db = DB.get_db(ds.type)
-        if db.connect_type == ConnectType.sqlalchemy:
+        if ds.type == 'intarkdb':
+            conn = None
+            cursor = None
+            try:
+                conn = intarkdb.connect(
+                    database="intarkdb",
+                    host = "172.16.45.219",
+                    port = 3333,
+                    user = "SYS",
+                    password = "IntarkDB"
+                )
+                cursor = conn.cursor()
+                cursor.execute("select 1;")
+                SQLBotLogUtil.info("success")
+                return True
+            except Exception as e:
+                SQLBotLogUtil.error(f"Datasource {ds.id} connection failed: {e}")
+                if is_raise:
+                    raise HTTPException(
+                        status_code=500,
+                        detail = trans("i18n_ds_invalid")+ f": {e.args}"
+                    )
+                return False
+            finally:
+                if cursor:
+                    cursor.close()
+                if conn:
+                    conn.close()
+                # with intarkdb.connect(database="intarkdb", 
+                #                 host = "172.16.45.219", 
+                #                 port = 9000, user = "SYS", 
+                #                 password = "IntarkDB") as conn, conn.cursor() as cursor:
+                #     try:
+                #         cursor.execute('select 1')
+                #         SQLBotLogUtil.info("success")
+                #         return True
+                #     except Exception as e:
+                #         SQLBotLogUtil.error(f"Datasource {ds.id} connection failed: {e}")
+                #         if is_raise:
+                #             raise HTTPException(status_code=500, detail=trans('i18n_ds_invalid') + f': {e.args}')
+                #         return False
+        elif db.connect_type == ConnectType.sqlalchemy:
             conn = get_engine(ds, 10)
             try:
                 with conn.connect() as connection:
@@ -134,6 +194,21 @@ def check_connection(trans: Optional[Trans], ds: CoreDatasource | AssistantOutDs
                 with pymysql.connect(user=conf.username, passwd=conf.password, host=conf.host,
                                      port=conf.port, db=conf.database, connect_timeout=10,
                                      read_timeout=10) as conn, conn.cursor() as cursor:
+                    try:
+                        cursor.execute('select 1')
+                        SQLBotLogUtil.info("success")
+                        return True
+                    except Exception as e:
+                        SQLBotLogUtil.error(f"Datasource {ds.id} connection failed: {e}")
+                        if is_raise:
+                            raise HTTPException(status_code=500, detail=trans('i18n_ds_invalid') + f': {e.args}')
+                        return False
+            # for debug
+            elif ds.type == 'intarkdb':
+                with intarkdb.connect(database="IntarkDB", 
+                                host = "127.0.0.1", 
+                                port = 9000, user = "SYS", 
+                                password = "IntarkDB") as conn, conn.cursor() as cursor:
                     try:
                         cursor.execute('select 1')
                         SQLBotLogUtil.info("success")
@@ -208,6 +283,14 @@ def get_version(ds: CoreDatasource | AssistantOutDsSchema):
                     cursor.execute(sql)
                     res = cursor.fetchall()
                     version = res[0][0]
+            # for debug
+            elif ds.type == 'intarkdb':
+                with intarkdb.connect(database="IntarkDB", host = "127.0.0.1", 
+                                      port = 9000, user = "SYS", 
+                                      password = "IntarkDB") as conn, conn.cursor() as cursor:
+                    cursor.execute(sql)
+                    res = cursor.fetchall()
+                    version = res
             elif ds.type == 'redshift':
                 version = ''
     except Exception as e:
@@ -229,6 +312,9 @@ def get_schema(ds: CoreDatasource):
                          FROM pg_namespace"""
             elif ds.type == "oracle":
                 sql = f"""select * from all_users"""
+            # for debug
+            elif ds.type == "intarkdb":
+                return [conf.database]
             with session.execute(text(sql)) as result:
                 res = result.fetchall()
                 res_list = [item[0] for item in res]
@@ -255,7 +341,28 @@ def get_tables(ds: CoreDatasource):
     conf = DatasourceConf(**json.loads(aes_decrypt(ds.configuration))) if ds.type != "excel" else get_engine_config()
     db = DB.get_db(ds.type)
     sql = get_table_sql(ds, conf, get_version(ds))
-    if db.connect_type == ConnectType.sqlalchemy:
+    if ds.type == 'intarkdb':
+        conn = None
+        cursor = None
+        try:
+            conn = intarkdb.connect(
+                database=conf.database,
+                host=conf.host,
+                port=conf.port,
+                user=conf.username,
+                password=conf.password
+            )
+            cursor = conn.cursor()
+            cursor.execute(sql)
+            res = cursor.fetchall()
+            res_list = [TableSchema(*item) for item in res]
+            return res_list
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    elif db.connect_type == ConnectType.sqlalchemy:
         with get_session(ds) as session:
             with session.execute(text(sql)) as result:
                 res = result.fetchall()
@@ -290,6 +397,44 @@ def get_tables(ds: CoreDatasource):
 def get_fields(ds: CoreDatasource, table_name: str = None):
     conf = DatasourceConf(**json.loads(aes_decrypt(ds.configuration))) if ds.type != "excel" else get_engine_config()
     db = DB.get_db(ds.type)
+    if ds.type == 'intarkdb':
+        conn = None
+        cursor = None
+        try:
+            conn = intarkdb.connect(
+                database=conf.database,
+                host=conf.host,
+                port=conf.port,
+                user=conf.username,
+                password=conf.password
+            )
+            cursor = conn.cursor()
+
+            sql_table = f"SELECT ID FROM \"SYS_TABLES\" WHERE NAME=\'{table_name}\'"
+            cursor.execute(sql_table)
+            row = cursor.fetchone()
+            if not row:
+                raise ValueError(f"Table {table_name} not found in SYS_TABLES")
+            table_id = row[0]
+
+            sql_fields = f'''
+                SELECT c."NAME", c."DATATYPE", c."BYTES", cm."COMMENT#"
+                FROM "SYS_COLUMNS" c
+                LEFT JOIN "SYS_COMMENT" cm
+                ON c."TABLE#" = cm."TABLE#"
+                AND c."ID" = cm."COLUMN#"
+                WHERE c."TABLE#" = {table_id}
+                ORDER BY c."ID"
+            '''
+            cursor.execute(sql_fields)
+            res = cursor.fetchall()
+            return [ColumnSchema(name, dtype, comment or "") for name, dtype, _, comment in res]
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
     sql = get_field_sql(ds, conf, table_name)
     if db.connect_type == ConnectType.sqlalchemy:
         with get_session(ds) as session:
@@ -328,7 +473,38 @@ def exec_sql(ds: CoreDatasource | AssistantOutDsSchema, sql: str, origin_column=
         sql = sql[:-1]
 
     db = DB.get_db(ds.type)
-    if db.connect_type == ConnectType.sqlalchemy:
+
+    if ds.type == 'intarkdb':
+        import re
+        conf = DatasourceConf(**json.loads(aes_decrypt(ds.configuration)))
+        sql = sql.replace("`", '"')
+        sql = re.sub(r"\bintarkdb\.", "", sql, flags=re.IGNORECASE)
+        sql = re.sub(r"\b\w+\.", "", sql)
+        try:
+            conn = intarkdb.connect(
+                host=conf.host,
+                port=conf.port,
+                user=conf.username,
+                password=conf.password,
+                database=conf.database
+            )
+            cursor=conn.cursor()
+            cursor.execute(sql)
+            res = cursor.fetchall()
+
+            columns = [field[0] for field in cursor.description] if origin_column else [
+                field[0].lower() for field in cursor.description
+            ]
+            result_list = [
+                {str(columns[i]): float(value) if isinstance(value, Decimal) else value for i, value in 
+                enumerate(tuple_item)}
+                for tuple_item in res
+            ]
+            return {"fields": columns, "data": result_list,
+                    "sql": bytes.decode(base64.b64encode(bytes(sql,'utf-8')))}
+        except Exception as ex:
+            raise ParseSQLResultError(str(ex))
+    elif db.connect_type == ConnectType.sqlalchemy:
         with get_session(ds) as session:
             with session.execute(text(sql)) as result:
                 try:

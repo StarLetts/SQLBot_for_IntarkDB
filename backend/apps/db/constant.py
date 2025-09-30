@@ -13,6 +13,9 @@ class ConnectType(Enum):
 
 
 class DB(Enum):
+    # for debug
+    intarkdb = ('intarkdb', '"', '"', ConnectType.sqlalchemy)
+    
     mysql = ('mysql', '`', '`', ConnectType.sqlalchemy)
     sqlServer = ('sqlServer', '[', ']', ConnectType.sqlalchemy)
     pg = ('pg', '"', '"', ConnectType.sqlalchemy)

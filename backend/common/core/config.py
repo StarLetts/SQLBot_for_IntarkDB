@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     MCP_IMAGE_HOST: str = 'http://localhost:3000'
     SERVER_IMAGE_HOST: str = 'https://YOUR_SERVE_IP:MCP_PORT/images/'
 
-    LOCAL_MODEL_PATH: str = '/opt/sqlbot/models'
+    LOCAL_MODEL_PATH: str = 'D:/SQLBot/backend'
     DEFAULT_EMBEDDING_MODEL: str = 'shibing624/text2vec-base-chinese'
     EMBEDDING_ENABLED: bool = True
     EMBEDDING_SIMILARITY: float = 0.4

@@ -230,6 +230,7 @@
         "sqlServer": "支持版本: 2012+",
         "oracle": "支持版本: 12+",
         "mysql": "支持版本: 5.6+",
+        "intarkdb": "支持版本: 1.2.0+",
         "pg": "支持版本: 9.6+"
       },
       "selected": "已选择: {0}/{1}",
@@ -283,6 +284,7 @@
     "field_notes": "字段备注",
     "select_all": "全选",
     "mysql_data_source": "修改 {msg} 数据源",
+    "intarkdb_data_source": "修改 {msg} 数据源",
     "configuration_information": "配置信息",
     "data_source": "是否删除数据源：{msg}？",
     "operate_with_caution": "被删除后，将无法对该数据源进行智能问数，请谨慎操作。",

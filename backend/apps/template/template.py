@@ -4,7 +4,7 @@ base_template = None
 
 
 def load():
-    with open('./template.yaml', 'r', encoding='utf-8') as f:
+    with open('D:/SQLBot/backend/apps/template/template.yaml', 'r', encoding='utf-8') as f:
         global base_template
         base_template = yaml.load(f, Loader=yaml.SafeLoader)
 

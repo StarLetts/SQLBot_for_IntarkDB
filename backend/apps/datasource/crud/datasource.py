@@ -268,6 +268,12 @@ def preview(session: SessionDep, current_user: CurrentUser, id: int, data: Table
 
     conf = DatasourceConf(**json.loads(aes_decrypt(ds.configuration))) if ds.type != "excel" else get_engine_config()
     sql: str = ""
+    #for debug
+    if ds.type == "intarkdb" :
+        sql = f"""SELECT "{"", "".join(fields)}" FROM "{data.table.table_name}"
+            {where} 
+            LIMIT 100"""
+            
     if ds.type == "mysql" or ds.type == "doris":
         sql = f"""SELECT `{"`, `".join(fields)}` FROM `{data.table.table_name}` 
             {where} 

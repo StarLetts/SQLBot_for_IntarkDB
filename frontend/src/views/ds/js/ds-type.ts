@@ -1,4 +1,5 @@
 import mysql_ds from '@/assets/datasource/icon_mysql.png'
+import intarkdb from '@/assets/datasource/icon_mysql.png'
 import excel from '@/assets/datasource/icon_excel.png'
 import oracle from '@/assets/datasource/icon_oracle.png'
 import pg from '@/assets/datasource/icon_PostgreSQL.png'
@@ -13,6 +14,7 @@ const t = i18n.global.t
 export const dsType = [
   { label: t('ds.local_excelcsv'), value: 'excel' },
   { label: 'MySQL', value: 'mysql' },
+  { label: 'IntarkDB', value: 'intarkdb' },
   { label: 'Oracle', value: 'oracle' },
   { label: 'PostgreSQL', value: 'pg' },
   { label: 'SQL Server', value: 'sqlServer' },
@@ -25,6 +27,7 @@ export const dsType = [
 export const dsTypeWithImg = [
   { name: t('ds.local_excelcsv'), type: 'excel', img: excel },
   { name: 'MySQL', type: 'mysql', img: mysql_ds },
+  { name: 'IntarkDB', type: 'intarkdb', img: intarkdb },
   { name: 'Oracle', type: 'oracle', img: oracle },
   { name: 'PostgreSQL', type: 'pg', img: pg },
   { name: 'SQL Server', type: 'sqlServer', img: sqlServer },

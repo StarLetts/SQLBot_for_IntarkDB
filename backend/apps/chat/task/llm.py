@@ -13,6 +13,7 @@ import orjson
 import pandas as pd
 import requests
 import sqlparse
+import re
 from langchain.chat_models.base import BaseChatModel
 from langchain_community.utilities import SQLDatabase
 from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage, AIMessage, BaseMessageChunk
