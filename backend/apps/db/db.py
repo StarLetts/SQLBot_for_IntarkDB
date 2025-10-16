@@ -15,16 +15,23 @@ import pymysql
 import sys
 import os
 import ctypes
-sys.path.append("C:/Users/Lenovo/.conda/envs/sqlbot/Lib/site-packages")
-sys.path.append("D:/IntarkDB_V2.0_windows/release/lib")
-dll_dir = r"D:\IntarkDB_V2.0_windows\release\lib"  # 修改成你的实际目录
-os.add_dll_directory(dll_dir)   # 让 Python 知道 DLL 在这里（Python 3.8+）
-ctypes.CDLL(os.path.join(dll_dir, "libnetwork_client_dynamic.dll"))
+# sys.path.append(r"backend\apps\db\site_packages")
+# sys.path.append(r"backend\apps\db\lib")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+dll_dir = os.path.join(current_dir, "lib")
+# dll_dir = r"backend\apps\db\lib"  # 修改成你的实际目录
+if platform.system() == "Windows":
+    os.add_dll_directory(dll_dir)   # 让 Python 知道 DLL 在这里（Python 3.8+）
+    ctypes.CDLL(os.path.join(dll_dir, "libnetwork_client_dynamic.dll"))
+elif platform.system() == "Linux":
+    # Linux 下加载 SO
+    dll_path = os.path.join(dll_dir, "libnetwork_client_dynamic.so")
+    ctypes.CDLL(dll_path)
 from intarkdb import intarkdb
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base
-from intarkdb import intarkdb_orm
-intarkdb_orm.register()
+# from intarkdb import intarkdb_orm
+# intarkdb_orm.register()
 import redshift_connector
 from sqlalchemy import create_engine, text, Engine
 from sqlalchemy.orm import sessionmaker
@@ -91,10 +98,10 @@ def get_engine(ds: CoreDatasource, timeout: int = 0) -> Engine:
     if timeout > 0:
         conf.timeout = timeout
     # for debug
-    if ds.type == "intarkdb":
-        intarkdb_orm.register()
-        engine = create_engine("IntarkDB:///intarkdb")
-    elif ds.type == "pg":
+    # if ds.type == "intarkdb":
+    #     intarkdb_orm.register()
+    #     engine = create_engine("IntarkDB:///intarkdb")
+    if ds.type == "pg":
         if conf.dbSchema is not None and conf.dbSchema != "":
             engine = create_engine(get_uri(ds),
                                    connect_args={"options": f"-c search_path={urllib.parse.quote(conf.dbSchema)}",
@@ -130,8 +137,8 @@ def check_connection(trans: Optional[Trans], ds: CoreDatasource | AssistantOutDs
             try:
                 conn = intarkdb.connect(
                     database="intarkdb",
-                    host = "172.16.45.219",
-                    port = 3333,
+                    host = "172.16.23.62",
+                    port = 9000,
                     user = "SYS",
                     password = "IntarkDB"
                 )

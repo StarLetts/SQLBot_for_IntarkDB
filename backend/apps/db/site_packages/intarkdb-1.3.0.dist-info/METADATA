@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: intarkdb
+Version: 1.3.0
+Summary: intarkdb Python DB API
+Home-page: 
+Author: maihaoran
+Author-email: maihaoran@ncti-gba.cn
+Classifier: Development Status :: 1 - Beta
+Classifier: Operating System :: LinuxIntended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3
+

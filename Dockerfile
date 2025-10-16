@@ -67,6 +67,8 @@ COPY g2-ssr/*.ttf /usr/share/fonts/truetype/liberation/
 COPY --from=sqlbot-builder ${SQLBOT_HOME} ${SQLBOT_HOME}
 COPY --from=ssr-builder /app /opt/sqlbot/g2-ssr
 COPY --from=vector-model /opt/maxkb/app/model /opt/sqlbot/models
+COPY backend/apps/db/lib /opt/sqlbot/app/apps/db/lib
+
 
 WORKDIR ${SQLBOT_HOME}/app
 
