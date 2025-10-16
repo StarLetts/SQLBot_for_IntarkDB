@@ -1,3 +1,7 @@
 * text=auto
 *.sh text eol=lf
 *.vue linguist-language=python
+
+*.py text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
